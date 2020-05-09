@@ -8,6 +8,9 @@ class Menu(models.Model):
     modified = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f'Menu {self.name}'
+
 
 class Dish(models.Model):
     name = models.CharField(max_length=1024, unique=True)
@@ -25,3 +28,6 @@ class Dish(models.Model):
         on_delete=models.CASCADE,
         related_name='dishes'
     )
+
+    def __str__(self):
+        return f'Dish {self.name} in menu {self.menu}'

@@ -8,3 +8,4 @@ pdbpp==0.10.2
 factory-boy==2.12.0
 flake8==3.7.9
 mypy==0.770
+coverage==5.1
