@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'drf_yasg',
 
     'menu'
 ]
@@ -131,3 +132,15 @@ REST_FRAMEWORK = {
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'images')
 MEDIA_URL = '/images/'
+SWAGGER_SETTINGS = {
+    'REFETCH_SCHEMA_ON_LOGIN': True,
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'description': 'Use with prefix Bearer',
+            'in': 'header'
+        }
+    }
+}

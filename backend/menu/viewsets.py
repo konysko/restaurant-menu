@@ -1,5 +1,8 @@
 from django.db.models import Prefetch
+from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework import viewsets, mixins, status
@@ -7,19 +10,27 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 
-from .filters import DishesCountOrdering
+from .filters import DishesCountOrdering, MenuFilterSet
 from .models import Menu, Dish
-from .serializers import MenuSerializer, DishSerializer
+from .serializers import MenuSerializer, DishSerializer, MenuDishesSerializer
 
 
+@method_decorator(name='list', decorator=swagger_auto_schema(
+    manual_parameters=[openapi.Parameter(
+        name='ordering',
+        in_=openapi.IN_QUERY,
+        description='name, -name, dishes_count, -dishes_count',
+        type=openapi.TYPE_STRING
+    )]
+))
 class MenuReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = MenuSerializer
     filter_backends = [DishesCountOrdering, OrderingFilter, DjangoFilterBackend]
     ordering_fields = ['name']
-    filterset_fields = {
-        'modified': ['lte', 'gte'],
-        'created': ['lte', 'gte']
-    }
+    filterset_class = MenuFilterSet
+    # filterset_fields = {
+    #     'modified': ['lte', 'gte'],
+    #     'created': ['lte', 'gte']
+    # }
 
     def get_queryset(self):
         if self.action == 'list':
@@ -28,10 +39,10 @@ class MenuReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             Prefetch('dishes', queryset=Dish.objects.order_by('pk'))
         )
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer_class(self):
         if self.action == 'list':
-            kwargs['fields'] = set(MenuSerializer.Meta.fields) - {'dishes'}
-        return super().get_serializer(*args, **kwargs)
+            return MenuSerializer
+        return MenuDishesSerializer
 
 
 class MenuManageViewSet(mixins.CreateModelMixin,
@@ -41,10 +52,6 @@ class MenuManageViewSet(mixins.CreateModelMixin,
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
     permission_classes = [DjangoModelPermissions]
-
-    def get_serializer(self, *args, **kwargs):
-        kwargs['fields'] = set(MenuSerializer.Meta.fields) - {'dishes'}
-        return super().get_serializer(*args, **kwargs)
 
 
 class DishManageViewSet(mixins.CreateModelMixin,

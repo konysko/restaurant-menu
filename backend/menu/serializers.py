@@ -6,12 +6,6 @@ from .models import Menu, Dish
 
 
 class DishSerializer(DynamicFieldsModelSerializer):
-    menu = serializers.SlugRelatedField(
-        queryset=Menu.objects.all(),
-        slug_field='name',
-        write_only=True
-    )
-
     class Meta:
         model = Dish
         fields = (
@@ -19,10 +13,23 @@ class DishSerializer(DynamicFieldsModelSerializer):
             'picture'
         )
 
+    menu = serializers.SlugRelatedField(
+        queryset=Menu.objects.all(),
+        slug_field='name',
+        write_only=True
+    )
 
-class MenuSerializer(DynamicFieldsModelSerializer):
+
+class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
-        fields = ('id', 'name', 'description', 'modified', 'created', 'dishes')
+        fields = ('id', 'name', 'description', 'modified', 'created')
 
-    dishes = DishSerializer(many=True)
+
+class MenuDishesSerializer(MenuSerializer):
+    class Meta:
+        model = Menu
+        fields = MenuSerializer.Meta.fields + ('dishes',)
+        dish_fields = set(DishSerializer.Meta.fields) - {'menu'}
+
+    dishes = DishSerializer(many=True, fields=Meta.dish_fields)

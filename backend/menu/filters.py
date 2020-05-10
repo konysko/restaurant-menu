@@ -1,6 +1,8 @@
 from django.db.models import Count
 from rest_framework.filters import BaseFilterBackend
-from rest_framework.compat import coreapi
+from django_filters import rest_framework as filters
+
+from .models import Menu
 
 
 class DishesCountOrdering(BaseFilterBackend):
@@ -21,8 +23,11 @@ class DishesCountOrdering(BaseFilterBackend):
             if param == self.value:
                 return "-%s" % param if descending else param
 
-    def get_schema_fields(self, view):
-        # todo
-        return coreapi.Field(
-            name='ordering'
-        )
+
+class MenuFilterSet(filters.FilterSet):
+    class Meta:
+        model = Menu
+        fields = ('modified', 'created')
+
+    modified = filters.IsoDateTimeFromToRangeFilter()
+    created = filters.IsoDateTimeFromToRangeFilter()

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 
 from django.utils.duration import duration_string
@@ -117,8 +117,8 @@ class TestCaseMenuReadOnlyViewSet(TestUtilsMixin, APITestCase):
 
         path = reverse('menu-list')
         payload = {
-            'modified__gte': self.transform_date(menu2.modified),
-            'modified__lte': self.transform_date(menu3.modified)
+            'modified_after': self.transform_date(menu2.modified),
+            'modified_before': self.transform_date(menu3.modified)
         }
         response = self.client.get(path, data=payload)
 
@@ -139,26 +139,25 @@ class TestCaseMenuReadOnlyViewSet(TestUtilsMixin, APITestCase):
 
         path = reverse('menu-list')
         payload = {
-            'created__gte': self.transform_date(menu2.created),
-            'created__lte': self.transform_date(menu3.created)
+            'created_after': self.transform_date(menu2.created),
+            'created_before': self.transform_date(menu3.created)
         }
         response = self.client.get(path, data=payload)
 
         expected = [self.transform_menu(menu) for menu in [menu2, menu3]]
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertListEqual(response.json(), expected)
 
     def test_should_raise_if_filter_with_wrong_date_format(self):
         path = reverse('menu-list')
         payload = {
-            'created__gte': '666-wrong-format'
+            'created_after': '666-wrong-format'
         }
 
         response = self.client.get(path, data=payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'created__gte': ['Enter a valid date/time.']})
+        self.assertEqual(response.json(), {'created': ['Enter a valid date/time.']})
 
     @classmethod
     def transform_dish(cls, dish: Dish):
