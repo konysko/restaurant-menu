@@ -25,4 +25,4 @@ class DishFactory(DjangoModelFactory):
     price = FuzzyDecimal(low=1, high=99)
     is_vegetarian = FuzzyChoice([False, True])
 
-    menu = factory.SubFactory(MenuFactory, dishes=None)
+    menu = factory.SubFactory(MenuFactory)

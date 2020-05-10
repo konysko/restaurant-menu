@@ -6,11 +6,12 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from common.tests import TestUtilsMixin
 from .factories import MenuFactory, DishFactory
 from menu.models import Menu, Dish
 
 
-class TestCaseMenuReadOnlyViewSet(APITestCase):
+class TestCaseMenuReadOnlyViewSet(TestUtilsMixin, APITestCase):
     def test_should_list_nonempty_menus(self):
         menus = MenuFactory.create_batch(5)
         DishFactory(menu=menus[0])
@@ -35,7 +36,6 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
             **self.transform_menu(menu),
             'dishes': [self.transform_dish(dish) for dish in dishes]
         }
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(response.json(), expected)
 
@@ -117,8 +117,8 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
 
         path = reverse('menu-list')
         payload = {
-            'modified__gte': self._transform_date(menu2.modified),
-            'modified__lte': self._transform_date(menu3.modified)
+            'modified__gte': self.transform_date(menu2.modified),
+            'modified__lte': self.transform_date(menu3.modified)
         }
         response = self.client.get(path, data=payload)
 
@@ -139,8 +139,8 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
 
         path = reverse('menu-list')
         payload = {
-            'created__gte': self._transform_date(menu2.created),
-            'created__lte': self._transform_date(menu3.created)
+            'created__gte': self.transform_date(menu2.created),
+            'created__lte': self.transform_date(menu3.created)
         }
         response = self.client.get(path, data=payload)
 
@@ -148,6 +148,17 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertListEqual(response.json(), expected)
+
+    def test_should_raise_if_filter_with_wrong_date_format(self):
+        path = reverse('menu-list')
+        payload = {
+            'created__gte': '666-wrong-format'
+        }
+
+        response = self.client.get(path, data=payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'created__gte': ['Enter a valid date/time.']})
 
     @classmethod
     def transform_dish(cls, dish: Dish):
@@ -158,8 +169,9 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
             'price': str(dish.price),
             'prepare_time': duration_string(dish.prepare_time),
             'is_vegetarian': dish.is_vegetarian,
-            'modified': cls._transform_date(dish.modified),
-            'created': cls._transform_date(dish.created)
+            'modified': cls.transform_date(dish.modified),
+            'created': cls.transform_date(dish.created),
+            'picture': dish.picture.url if dish.picture else None
         }
 
     @classmethod
@@ -168,16 +180,9 @@ class TestCaseMenuReadOnlyViewSet(APITestCase):
             'id': menu.id,
             'name': menu.name,
             'description': menu.description,
-            'modified': cls._transform_date(menu.modified),
-            'created': cls._transform_date(menu.created)
+            'modified': cls.transform_date(menu.modified),
+            'created': cls.transform_date(menu.created)
         }
-
-    @staticmethod
-    def _transform_date(date):
-        value = date.isoformat()
-        if value.endswith('+00:00'):
-            value = value[:-6] + 'Z'
-        return value
 
     @staticmethod
     def call_with_mocked_date(obj, date):
