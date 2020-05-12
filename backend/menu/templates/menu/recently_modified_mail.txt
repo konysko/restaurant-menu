@@ -1,0 +1,19 @@
+Yesterday modified dishes:
+{% for dish in modified_dishes %}
+Name -  {{ dish.name }}
+Description - {{ dish.description }}
+Price - {{ dish.price }}
+Prepare time - {{ dish.prepare_time }}
+Vegetarian - {{ dish.is_vegetarian }}
+Menu {{ dish.menu.menu }}
+{% endfor %}
+
+Yesterday created dishes:
+{% for dish in created_dishes %}
+Name -  {{ dish.name }}
+Description - {{ dish.description }}
+Price - {{ dish.price }}
+Prepare time - {{ dish.prepare_time }}
+Vegetarian - {{ dish.is_vegetarian }}
+Menu {{ dish.menu }}
+{% endfor %}

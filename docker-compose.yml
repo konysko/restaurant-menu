@@ -8,6 +8,9 @@ services:
     env_file:
       - ./.env
 
+  redis:
+    image: "redis:6-alpine"
+
   backend:
     stdin_open: true
     tty: true
@@ -20,6 +23,18 @@ services:
       - 8000:8000
     depends_on:
       - db
+      - redis
+    env_file:
+      - ./.env
+
+  celery-beat:
+    build: ./backend
+    command: celery -A restaurant_website worker -l info -B
+    volumes:
+      - ./backend:/code
+    depends_on:
+      - db
+      - redis
     env_file:
       - ./.env
 

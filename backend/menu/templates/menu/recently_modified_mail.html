@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<h3>Yesterday modified mails</h3>
+  {% include 'menu/dish_table.html' with dishes=modified_dishes %}
+<h3>Yesterday created dishes</h3>
+  {% include 'menu/dish_table.html' with dishes=created_dishes %}
+</body>
+</html>

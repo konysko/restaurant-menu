@@ -1,0 +1,26 @@
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Price</th>
+    <th>Prepare time</th>
+    <th>Vegetarian</th>
+    <th>Picture</th>
+    <th>Menu</th>
+  </tr>
+  {% for dish in dishes %}
+    <tr>
+      <td>{{ dish.name }}</td>
+      <td>{{ dish.description }}</td>
+      <td>{{ dish.price }}</td>
+      <td>{{ dish.prepare_time }}</td>
+      <td>{{ dish.is_vegetarian }}</td>
+      <td>
+      {% if dish.picture %}
+       <img src="{{ dish.picture.url }}" height="150px" width="150px">
+      {% endif %}
+      </td>
+      <td>{{ dish.menu.name }}</td>
+    </tr>
+  {% endfor %}
+</table>

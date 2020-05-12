@@ -1,8 +1,10 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         fields = kwargs.pop('fields', None)
 
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)

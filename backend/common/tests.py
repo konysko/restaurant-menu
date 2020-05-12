@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 
 from menu.management.commands.load_initial_data import Command
@@ -22,3 +24,9 @@ class TestUtilsMixin:
         if value.endswith('+00:00'):
             value = value[:-6] + 'Z'
         return value
+
+    @staticmethod
+    def call_with_mocked_date(obj, date):
+        with patch('django.utils.timezone.now') as current_date:
+            current_date.return_value = date
+            return obj()

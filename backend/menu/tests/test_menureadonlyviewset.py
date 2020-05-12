@@ -1,5 +1,4 @@
-from datetime import datetime, timezone, timedelta
-from unittest.mock import patch
+from datetime import datetime, timezone
 
 from django.utils.duration import duration_string
 from rest_framework import status
@@ -182,9 +181,3 @@ class TestCaseMenuReadOnlyViewSet(TestUtilsMixin, APITestCase):
             'modified': cls.transform_date(menu.modified),
             'created': cls.transform_date(menu.created)
         }
-
-    @staticmethod
-    def call_with_mocked_date(obj, date):
-        with patch('django.utils.timezone.now') as current_date:
-            current_date.return_value = date
-            return obj()

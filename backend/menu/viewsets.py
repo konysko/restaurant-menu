@@ -1,4 +1,6 @@
-from django.db.models import Prefetch
+from typing import Union, Type, Any
+
+from django.db.models import Prefetch, QuerySet
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -8,6 +10,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework import viewsets, mixins, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .filters import DishesCountOrdering, MenuFilterSet
@@ -27,19 +30,15 @@ class MenuReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DishesCountOrdering, OrderingFilter, DjangoFilterBackend]
     ordering_fields = ['name']
     filterset_class = MenuFilterSet
-    # filterset_fields = {
-    #     'modified': ['lte', 'gte'],
-    #     'created': ['lte', 'gte']
-    # }
 
-    def get_queryset(self):
+    def get_queryset(self) -> 'QuerySet[Menu]':
         if self.action == 'list':
             return Menu.objects.filter(dishes__isnull=False).distinct().order_by('pk')
         return Menu.objects.prefetch_related(
             Prefetch('dishes', queryset=Dish.objects.order_by('pk'))
         )
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Union[MenuSerializer, MenuDishesSerializer]]:
         if self.action == 'list':
             return MenuSerializer
         return MenuDishesSerializer
@@ -62,7 +61,7 @@ class DishManageViewSet(mixins.CreateModelMixin,
     serializer_class = DishSerializer
     permission_classes = [DjangoModelPermissions]
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer(self, *args: Any, **kwargs: Any) -> DishSerializer:
         if self.action == 'picture':
             kwargs['fields'] = ['picture']
         else:
@@ -74,14 +73,15 @@ class DishManageViewSet(mixins.CreateModelMixin,
         detail=True,
         parser_classes=[MultiPartParser, FormParser]
     )
-    def picture(self, request, pk):
+    def picture(self, request: Request, pk: int) -> Response:
         if request.method == 'PUT':
             super().update(request, pk)
         elif request.method == 'DELETE':
             super().destroy(request, pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def perform_destroy(self, instance):
+    def perform_destroy(self, instance: Dish) -> None:
         if self.action == 'picture':
-            return instance.picture.delete()
-        return super().perform_destroy(instance)
+            instance.picture.delete()
+        else:
+            super().perform_destroy(instance)

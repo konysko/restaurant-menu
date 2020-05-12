@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'drf_yasg',
+    'django_celery_beat',
 
     'menu'
 ]
@@ -142,5 +145,21 @@ SWAGGER_SETTINGS = {
             'description': 'Use with prefix Bearer',
             'in': 'header'
         }
+    }
+}
+
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = '1025'
+
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULE = {
+    'notify-about-new-and-modified-dishes': {
+        'task': 'menu.tasks.notify_about_new_and_modified_dishes.notify_about_new_and_modified_dishes',
+        'schedule': crontab(minute=0, hour=10)
     }
 }
