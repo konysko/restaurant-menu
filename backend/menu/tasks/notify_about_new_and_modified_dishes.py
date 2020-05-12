@@ -102,6 +102,7 @@ def send_emails(emails: List[dict]) -> Tuple[List[dict], List[dict]]:
     failed_mails = []
     sent_mails = []
     connection = get_connection()
+    connection.open()
     for mail in emails:
         result = send_mail(**mail, connection=connection, fail_silently=True)
         if result == 1:

@@ -1,5 +1,5 @@
 #!/bin/bash
 
+cp .env.template .env
 docker-compose run backend python manage.py migrate
 docker-compose run backend python manage.py load_initial_data
-docker-compose up
